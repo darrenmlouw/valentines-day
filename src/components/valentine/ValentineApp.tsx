@@ -32,11 +32,11 @@ export function ValentineApp({ name = "Mycala" }: { name?: string }) {
 
   const introLines = useMemo(
     () => [
-      `Hey ${name}…`,
-      "I made you a tiny website.",
-      "I have one question for you.",
+      "I made you a tiny website, just for you.",
+      "Because you deserve something sweet (and a little cheesy).",
+      "Take a deep breath… I have one question to ask.",
     ],
-    [name],
+    [],
   );
 
   const taunts = useMemo(
@@ -152,15 +152,10 @@ export function ValentineApp({ name = "Mycala" }: { name?: string }) {
               className="w-full"
             >
               <div className="relative w-full">
-                <Card className="border-white/25 bg-white/10">
+                <Card className="border-white/15">
                   <CardHeader>
                     <div className="flex items-start justify-between gap-4">
-                      <div className="text-left">
-                        <CardTitle className="text-3xl sm:text-4xl">Hey {name}</CardTitle>
-                        <p className="mt-3 max-w-prose text-base leading-7 text-white/85">
-                          {introLines.join(" ")}
-                        </p>
-                      </div>
+                      <CardTitle className="text-3xl sm:text-4xl md:text-5xl">Hey {name}</CardTitle>
 
                       <motion.div
                         aria-hidden="true"
@@ -176,23 +171,22 @@ export function ValentineApp({ name = "Mycala" }: { name?: string }) {
                             repeat: Infinity,
                             ease: "easeInOut",
                           }}
-                          className="grid place-items-center rounded-3xl bg-white/10 px-4 py-3"
+                          className="grid place-items-center rounded-2xl bg-white/10 px-3 py-2 sm:rounded-3xl sm:px-4 sm:py-3"
                         >
-                          <span className="text-3xl">💌</span>
+                          <span className="text-xl sm:text-2xl md:text-3xl">💌</span>
                         </motion.div>
                       </motion.div>
                     </div>
+
+                    <p className="mt-3 max-w-prose text-base leading-7 text-white/85">
+                      {introLines.join(" ")}
+                    </p>
                   </CardHeader>
 
                   <CardContent>
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-white/80">
-                      <span className="inline-flex h-9 items-center rounded-full bg-white/10 px-4 text-sm">
-                        One tiny note
-                      </span>
-                      <span className="inline-flex h-9 items-center gap-2 rounded-full bg-white/10 px-4 text-sm">
-                        <Sparkles className="h-4 w-4" />
-                        Extra cute
-                      </span>
+                    <div className="mt-3 flex items-center gap-2 text-white/80">
+                      <Sparkles className="h-4 w-4" />
+                      <p className="text-sm leading-6">A tiny note, with extra cute built in.</p>
                     </div>
 
                     <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -208,10 +202,6 @@ export function ValentineApp({ name = "Mycala" }: { name?: string }) {
                       </p>
                     </div>
 
-                    <div className="mt-7 h-px w-full bg-white/15" />
-                    <p className="mt-5 text-sm text-white/70">
-                      P.S. If you’re on your phone, this is optimized for you.
-                    </p>
                   </CardContent>
                 </Card>
 
@@ -229,7 +219,7 @@ export function ValentineApp({ name = "Mycala" }: { name?: string }) {
               transition={{ duration: 0.35, ease: "easeOut" }}
               className="w-full"
             >
-              <Card className="border-white/25 bg-white/10">
+              <Card className="border-white/15">
                 <CardHeader>
                   <CardTitle className="text-3xl sm:text-4xl">
                     {name}, will you be my Valentine?
@@ -310,7 +300,7 @@ export function ValentineApp({ name = "Mycala" }: { name?: string }) {
               transition={{ duration: 0.35, ease: "easeOut" }}
               className="w-full"
             >
-              <Card className="border-white/25 bg-white/10">
+              <Card className="border-white/15">
                 <CardHeader>
                   <CardTitle className="text-3xl sm:text-4xl">YAY!!!</CardTitle>
                   <p className="mt-3 text-white/85">
