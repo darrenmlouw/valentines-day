@@ -26,6 +26,76 @@ function toErrorInfo(err: unknown) {
   };
 }
 
+function firstEnv(names: string[]) {
+  for (const name of names) {
+    const v = process.env[name];
+    if (v && v.trim()) return v.trim();
+  }
+  return "";
+}
+
+async function proxyAwareFetch(
+  url: string,
+  init: RequestInit,
+  opts: { debugEnabled: boolean },
+): Promise<{ resp: Response; debug?: unknown }> {
+  const proxyUrl = firstEnv([
+    "HTTPS_PROXY",
+    "https_proxy",
+    "HTTP_PROXY",
+    "http_proxy",
+    "ALL_PROXY",
+    "all_proxy",
+  ]);
+
+  const noProxy = firstEnv(["NO_PROXY", "no_proxy"]);
+
+  // In production (e.g. Vercel) we rely on normal fetch.
+  if (!proxyUrl || process.env.NODE_ENV === "production") {
+    return { resp: await fetch(url, init) };
+  }
+
+  try {
+    // Only a single endpoint is called here; simple support is enough.
+    // If NO_PROXY is set, the proxy behavior may still differ by environment.
+    const undici = await import("undici");
+    const dispatcher = new undici.ProxyAgent(proxyUrl);
+    const resp = await undici.fetch(url, {
+      ...(init as unknown as Record<string, unknown>),
+      dispatcher,
+    } as never);
+
+    return {
+      resp: resp as unknown as Response,
+      debug: opts.debugEnabled
+        ? {
+            proxy: {
+              enabled: true,
+              url: proxyUrl,
+              noProxy: noProxy || undefined,
+            },
+          }
+        : undefined,
+    };
+  } catch (err) {
+    // Fall back to normal fetch; return error details for dev diagnostics.
+    const fallback = await fetch(url, init);
+    return {
+      resp: fallback,
+      debug: opts.debugEnabled
+        ? {
+            proxy: {
+              enabled: true,
+              url: proxyUrl,
+              noProxy: noProxy || undefined,
+              undiciError: toErrorInfo(err),
+            },
+          }
+        : undefined,
+    };
+  }
+}
+
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as NotifyBody;
 
@@ -70,11 +140,22 @@ export async function POST(req: Request) {
 
   try {
     const isDiscord = webhookUrl.includes("discord.com/api/webhooks");
-    const resp = await fetch(webhookUrl, {
+    const { resp, debug: proxyDebug } = await proxyAwareFetch(
+      webhookUrl,
+      {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(isDiscord ? { content: text } : { text }),
-    });
+      },
+      { debugEnabled },
+    );
+
+    if (debugEnabled && proxyDebug) {
+      debug = {
+        ...(typeof debug === "object" && debug ? (debug as object) : null),
+        ...(proxyDebug as object),
+      };
+    }
 
     if (!resp.ok) {
       const bodyText = await resp.text().catch(() => "");
@@ -90,6 +171,7 @@ export async function POST(req: Request) {
           status: resp.status,
           statusText: resp.statusText,
           bodyPreview: bodyText.slice(0, 500),
+          ...(typeof debug === "object" && debug ? (debug as object) : null),
         };
       }
       results.webhook = "failed";
