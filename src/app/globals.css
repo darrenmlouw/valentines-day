@@ -3,6 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --ring: rgba(244, 114, 182, 0.85);
 }
 
 @theme inline {
@@ -22,5 +23,28 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+@keyframes float-heart {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.95);
+    filter: blur(0px);
+  }
+  20% {
+    transform: translate3d(10px, -20vh, 0) scale(1);
+  }
+  60% {
+    transform: translate3d(-8px, -65vh, 0) scale(1.05);
+  }
+  100% {
+    transform: translate3d(6px, -110vh, 0) scale(1.1);
+    filter: blur(0.35px);
+  }
+}
+
+.animate-float-heart {
+  animation-name: float-heart;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }

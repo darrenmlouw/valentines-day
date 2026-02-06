@@ -1,5 +1,14 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Valentine Site
+
+This project is a cute Valentine ask website:
+
+- Animated intro screen
+- “Will you be my Valentine?” with a dodging **No** button
+- Confetti celebration on **Yes**
+- Optional notification to you via webhook (Discord/IFTTT/etc.) or email (Resend)
+
 ## Getting Started
 
 First, run the development server:
@@ -15,6 +24,14 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+### Notifications (optional)
+
+Copy `.env.example` to `.env.local` and fill in one option:
+
+**Webhook (recommended easiest):**
+
+- Create a Discord webhook (or any webhook endpoint) and set `DISCORD_WEBHOOK_URL` or `NOTIFY_WEBHOOK_URL`.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
