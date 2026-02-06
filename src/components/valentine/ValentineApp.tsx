@@ -57,10 +57,35 @@ function randomBetweenRng(rng: () => number, min: number, max: number) {
 function TypewriterReveal({
   text,
   reduceMotion,
+  onDone,
 }: {
   text: string;
   reduceMotion: boolean;
+  onDone?: () => void;
 }) {
+  useEffect(() => {
+    if (!onDone) return;
+
+    if (reduceMotion) {
+      onDone();
+      return;
+    }
+
+    const chars = Array.from(text);
+    const delayChildren = 0.08;
+    const staggerChildren = 0.014;
+    const charDuration = 0.14;
+
+    const totalSeconds =
+      delayChildren + staggerChildren * Math.max(0, chars.length - 1) + charDuration;
+    const timeoutId = window.setTimeout(
+      () => onDone(),
+      Math.round((totalSeconds + 0.12) * 1000),
+    );
+
+    return () => window.clearTimeout(timeoutId);
+  }, [onDone, reduceMotion, text]);
+
   if (reduceMotion) return <>{text}</>;
 
   const chars = Array.from(text);
@@ -174,6 +199,8 @@ export function ValentineApp({
   const reduceMotion: boolean = Boolean(useReducedMotion());
   const [step, setStep] = useState<Step>('intro');
   const [questionEntered, setQuestionEntered] = useState(false);
+  const [introTextDone, setIntroTextDone] = useState(false);
+  const [questionTextDone, setQuestionTextDone] = useState(false);
   const [noPos, setNoPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [noSize, setNoSize] = useState<{ w: number; h: number } | null>(null);
   const [noReady, setNoReady] = useState(false);
@@ -382,10 +409,23 @@ export function ValentineApp({
       setQuestionEntered(Boolean(reduceMotion));
       setNoLabel('No');
       lastTauntRef.current = '';
+      setQuestionTextDone(Boolean(reduceMotion));
       return;
     }
     setQuestionEntered(false);
   }, [reduceMotion, step]);
+
+  useEffect(() => {
+    if (step === 'intro') {
+      setIntroTextDone(Boolean(reduceMotion));
+      return;
+    }
+    setIntroTextDone(false);
+  }, [reduceMotion, step]);
+
+  useEffect(() => {
+    if (step !== 'question') setQuestionTextDone(false);
+  }, [step]);
 
   useEffect(() => {
     if (step !== 'question') return;
@@ -433,7 +473,7 @@ export function ValentineApp({
     >
       <FloatingHearts count={24} />
 
-      {step === 'question' && noReady && (
+      {step === 'question' && noReady && (reduceMotion || questionTextDone) && (
         <motion.div
           className="fixed z-30"
           initial={false}
@@ -565,10 +605,25 @@ export function ValentineApp({
                       <TypewriterReveal
                         text={introText}
                         reduceMotion={reduceMotion}
+                        onDone={() => setIntroTextDone(true)}
                       />
                     </p>
 
-                    <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <motion.div
+                      className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={
+                        introTextDone || reduceMotion
+                          ? { opacity: 1, y: 0 }
+                          : { opacity: 0, y: 10 }
+                      }
+                      transition={{ duration: 0.32, ease: 'easeOut' }}
+                      style={{
+                        pointerEvents:
+                          introTextDone || reduceMotion ? 'auto' : 'none',
+                      }}
+                      aria-hidden={!(introTextDone || reduceMotion)}
+                    >
                       <div className="relative w-full sm:w-auto">
                         <ButtonSparkles reduceMotion={reduceMotion} />
                         <Button
@@ -582,7 +637,7 @@ export function ValentineApp({
                       <p className="text-center text-xs leading-5 text-white/70 sm:text-right">
                         (Made with love. Tap the button.)
                       </p>
-                    </div>
+                    </motion.div>
                   </CardContent>
                 </Card>
 
@@ -618,6 +673,7 @@ export function ValentineApp({
                       <TypewriterReveal
                         text={`${name} ❤️ Being with you has genuinely made my life better in so many ways, and I’m really grateful for everything we share — the laughs, the support, and even the quiet moments. You mean a lot to me, and I’d love to make this Valentine’s Day ours. Will you be my Valentine?`}
                         reduceMotion={reduceMotion}
+                        onDone={() => setQuestionTextDone(true)}
                       />
                     ) : (
                       <span className="opacity-0" aria-hidden="true">
@@ -625,15 +681,37 @@ export function ValentineApp({
                       </span>
                     )}
                   </p>
-                  <p className="mt-3 text-white/85">
+                  <motion.p 
+                  initial={{ opacity: 0}}
+                  animate={
+                    questionTextDone || reduceMotion
+                      ? { opacity: 1}
+                      : { opacity: 0}
+                  }
+                  transition={{ duration: 0.32, ease: 'easeOut', delay: 0.1 }}
+                  className="mt-3 text-white/85">
                     Choose wisely (Very wisely)
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 mt-8 text-sm text-white/80">
+                  </motion.p>
+                  <motion.div
+                    className="mt-8 flex flex-col gap-3 text-sm text-white/80 sm:flex-row"
+                    initial={{ opacity: 0}}
+                    animate={
+                      questionTextDone || reduceMotion
+                        ? { opacity: 1}
+                        : { opacity: 0}
+                    }
+                    transition={{ duration: 0.32, ease: 'easeOut' }}
+                    style={{
+                      pointerEvents:
+                        questionTextDone || reduceMotion ? 'auto' : 'none',
+                    }}
+                    aria-hidden={!(questionTextDone || reduceMotion)}
+                  >
                     <div className="relative w-full">
                       <ButtonSparkles reduceMotion={reduceMotion} count={12} />
                       <Button
                         variant="default"
-                        className="touch-manipulation w-full text-lg sm:text-xl"
+                        className="touch-manipulation w-full text-lg sm:text-xl transform-none hover:transform-none active:transform-none"
                         onClick={() => setStep('yes')}
                       >
                         Yes
@@ -648,7 +726,7 @@ export function ValentineApp({
                     >
                       No
                     </Button>
-                  </div>
+                  </motion.div>
                 </CardContent>
               </Card>
             </motion.div>
