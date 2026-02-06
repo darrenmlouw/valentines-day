@@ -11,7 +11,15 @@ import {
 } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Heart, Loader2, Sparkles, XCircle } from 'lucide-react';
+import {
+  CheckCircle2,
+  Heart,
+  Loader2,
+  Sparkles,
+  Volume2,
+  VolumeX,
+  XCircle,
+} from 'lucide-react';
 
 import { FloatingHearts } from '@/components/valentine/FloatingHearts';
 import { Button } from '@/components/ui/button';
@@ -237,6 +245,9 @@ export function ValentineApp({
     'idle' | 'sending' | 'sent' | 'failed'
   >('idle');
 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [musicOn, setMusicOn] = useState(false);
+
   const appRef = useRef<HTMLDivElement | null>(null);
   const noAnchorRef = useRef<HTMLButtonElement | null>(null);
   const noButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -366,6 +377,29 @@ export function ValentineApp({
       if (Date.now() < end) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
+  }, []);
+
+  const startMusic = useCallback(async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = 0.35;
+    audio.muted = false;
+
+    try {
+      await audio.play();
+      setMusicOn(true);
+    } catch {
+      // Autoplay may be blocked until user gesture.
+      setMusicOn(false);
+    }
+  }, []);
+
+  const stopMusic = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    setMusicOn(false);
   }, []);
 
   const notifyYes = useCallback(async () => {
@@ -537,6 +571,35 @@ export function ValentineApp({
       ref={appRef}
       className="relative min-h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.18),_transparent_55%),radial-gradient(circle_at_bottom,_rgba(244,114,182,0.25),_transparent_60%),linear-gradient(135deg,_#7c3aed_0%,_#ec4899_45%,_#fb7185_100%)]"
     >
+      <audio ref={audioRef} src="/MyGirl.mp3" loop preload="auto" playsInline />
+
+      <Button
+        type="button"
+        variant="secondary"
+        className="fixed right-4 top-4 z-40 touch-manipulation"
+        onClick={() => {
+          if (musicOn) {
+            stopMusic();
+          } else {
+            void startMusic();
+          }
+        }}
+        aria-pressed={musicOn}
+        aria-label={musicOn ? 'Turn music off' : 'Turn music on'}
+      >
+        {musicOn ? (
+          <>
+            <Volume2 className="h-4 w-4" />
+            Music
+          </>
+        ) : (
+          <>
+            <VolumeX className="h-4 w-4" />
+            Music
+          </>
+        )}
+      </Button>
+
       <FloatingHearts count={24} />
 
       {step === 'question' && noReady && (reduceMotion || questionTextDone) && (
@@ -695,7 +758,10 @@ export function ValentineApp({
                         <Button
                           size="lg"
                           className="touch-manipulation w-full sm:w-auto"
-                          onClick={() => setStep('question')}
+                          onClick={() => {
+                            void startMusic();
+                            setStep('question');
+                          }}
                         >
                           Open my note
                         </Button>
