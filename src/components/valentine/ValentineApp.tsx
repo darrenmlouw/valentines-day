@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Sparkles } from 'lucide-react';
+import { CheckCircle2, Heart, Loader2, Sparkles, XCircle } from 'lucide-react';
 
 import { FloatingHearts } from '@/components/valentine/FloatingHearts';
 import { Button } from '@/components/ui/button';
@@ -466,6 +466,44 @@ export function ValentineApp({
     void notifyYes();
   }, [celebrate, notifyYes, step]);
 
+  const notifyUi = useMemo(() => {
+    switch (notifyStatus) {
+      case 'sending':
+        return {
+          text: 'Notifying you right now…',
+          className:
+            'border-white/20 bg-white/10 text-white/85 ring-1 ring-white/10',
+          Icon: Loader2,
+          spin: true,
+        };
+      case 'sent':
+        return {
+          text: 'Notification sent. 💌',
+          className:
+            'border-emerald-200/20 bg-emerald-500/10 text-emerald-50 ring-1 ring-emerald-300/20',
+          Icon: CheckCircle2,
+          spin: false,
+        };
+      case 'failed':
+        return {
+          text: 'Couldn’t send the notification (but the YES still counts).',
+          className:
+            'border-amber-200/20 bg-amber-500/10 text-amber-50 ring-1 ring-amber-300/20',
+          Icon: XCircle,
+          spin: false,
+        };
+      case 'idle':
+      default:
+        return {
+          text: '',
+          className:
+            'border-white/20 bg-white/10 text-white/80 ring-1 ring-white/10',
+          Icon: CheckCircle2,
+          spin: false,
+        };
+    }
+  }, [notifyStatus]);
+
   return (
     <div
       ref={appRef}
@@ -742,24 +780,59 @@ export function ValentineApp({
               className="w-full"
             >
               <Card className="border-white/15">
-                <CardHeader>
-                  <CardTitle className="text-3xl sm:text-4xl">YAY!!!</CardTitle>
-                  <p className="mt-3 text-white/85">
-                    Officially the cutest Valentine ever: {name}.
+                <CardHeader className="text-center">
+                  <motion.div
+                    className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-white/10 ring-1 ring-white/20"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={
+                      reduceMotion
+                        ? { scale: 1, opacity: 1 }
+                        : { scale: [0.9, 1.08, 1], opacity: 1 }
+                    }
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { duration: 0.5, ease: 'easeOut' }
+                    }
+                  >
+                    <motion.div
+                      animate={
+                        reduceMotion
+                          ? undefined
+                          : { y: [0, -3, 0], rotate: [-6, 6, -6] }
+                      }
+                      transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                      <Heart className="h-8 w-8 text-pink-100" />
+                    </motion.div>
+                  </motion.div>
+
+                  <CardTitle className="text-4xl sm:text-5xl">YAY!!!</CardTitle>
+                  <p className="mt-3 text-white/85 mb-3">
+                    {name}, you just made my whole day.💘
                   </p>
                 </CardHeader>
                 <CardContent>
-                  <div className="mt-4 grid gap-3 text-white/85">
-                    <p>
-                      I’m so excited. I can’t wait to make this day special.
+                  <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-white/[0.06] p-5 text-white/90 ring-1 ring-white/10 sm:p-6">
+                    <div className="pointer-events-none absolute -left-10 -top-10 h-36 w-36 rounded-full bg-pink-400/20 blur-2xl" />
+                    <div className="pointer-events-none absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-fuchsia-300/15 blur-2xl" />
+
+                    <p className="text-base leading-7 text-white/90">
+                      I’m so excited. I can’t wait to make valentines special.
                     </p>
-                    <p className="text-white/70">
-                      {notifyStatus === 'sending' && 'Notifying you right now…'}
-                      {notifyStatus === 'sent' && 'Notification sent. 💌'}
-                      {notifyStatus === 'failed' &&
-                        'Couldn’t send the notification, but the YES still counts.'}
-                      {notifyStatus === 'idle' && ''}
-                    </p>
+
+                    {notifyUi.text && (
+                      <div
+                        className={`mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${notifyUi.className}`}
+                        role="status"
+                        aria-live="polite"
+                      >
+                        <notifyUi.Icon
+                          className={`h-4 w-4 ${notifyUi.spin ? 'animate-spin' : ''}`}
+                        />
+                        <span>{notifyUi.text}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-8 flex flex-row gap-3">
