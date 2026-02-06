@@ -88,34 +88,62 @@ function TypewriterReveal({
 
   if (reduceMotion) return <>{text}</>;
 
-  const chars = Array.from(text);
-  const container = {
-    hidden: {},
-    show: {
-      transition: {
-        staggerChildren: 0.014,
-        delayChildren: 0.08,
-      },
-    },
-  };
+  const delayChildren = 0.08;
+  const staggerChildren = 0.014;
+  const charDuration = 0.14;
 
   const char = {
     hidden: { opacity: 0, y: 4 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.14 } },
+    show: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: charDuration,
+        delay: delayChildren + i * staggerChildren,
+      },
+    }),
   };
+
+  // Split into whitespace + word chunks so the browser wraps between words,
+  // not between every animated letter.
+  const parts = text.split(/(\s+)/);
 
   return (
     <motion.span
       className="typewriter"
-      variants={container}
       initial="hidden"
       animate="show"
     >
-      {chars.map((c, i) => (
-        <motion.span key={`${c}-${i}`} variants={char} className="inline-block">
-          {c === ' ' ? '\u00A0' : c}
-        </motion.span>
-      ))}
+      {(() => {
+        let globalIndex = 0;
+        return parts.map((part, partIndex) => {
+          if (!part) return null;
+
+          // Keep whitespace as real whitespace so wrapping works naturally.
+          if (/^\s+$/.test(part)) {
+            return <span key={`ws-${partIndex}`}>{part}</span>;
+          }
+
+          const letters = Array.from(part);
+          return (
+            <span
+              key={`word-${partIndex}`}
+              className="inline-block whitespace-nowrap"
+            >
+              {letters.map((c, i) => (
+                <motion.span
+                  key={`${c}-${partIndex}-${i}`}
+                  variants={char}
+                  custom={globalIndex++}
+                  className="inline-block"
+                >
+                  {c}
+                </motion.span>
+              ))}
+            </span>
+          );
+        });
+      })()}
       <span className="typewriter-caret" aria-hidden="true" />
     </motion.span>
   );
