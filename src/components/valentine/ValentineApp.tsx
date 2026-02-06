@@ -550,21 +550,23 @@ export function ValentineApp({
                       </motion.div>
                     </div>
 
+                    
+                  </CardHeader>
+
+                  <CardContent>
+                    <div className="flex items-center gap-2 text-white/80">
+                      <Sparkles className="h-4 w-4" />
+                      <p className="text-sm leading-6">
+                        A tiny note, with extra cute built in.
+                      </p>
+                    </div>
+
                     <p className="mt-3 max-w-prose text-base leading-7 text-white/85 break-words">
                       <TypewriterReveal
                         text={introText}
                         reduceMotion={reduceMotion}
                       />
                     </p>
-                  </CardHeader>
-
-                  <CardContent>
-                    <div className="mt-3 flex items-center gap-2 text-white/80">
-                      <Sparkles className="h-4 w-4" />
-                      <p className="text-sm leading-6">
-                        A tiny note, with extra cute built in.
-                      </p>
-                    </div>
 
                     <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="relative w-full sm:w-auto">
@@ -612,28 +614,40 @@ export function ValentineApp({
                 </CardHeader>
                 <CardContent>
                   <p className="mt-3 text-white/85">
-                    {name} ❤️ Being with you has genuinely made my life better in so many ways, and I’m really grateful for everything we share — the laughs, the support, and even the quiet moments. You mean a lot to me, and I’d love to make this Valentine’s Day ours. Will you be my Valentine?
+                    {questionEntered ? (
+                      <TypewriterReveal
+                        text={`${name} ❤️ Being with you has genuinely made my life better in so many ways, and I’m really grateful for everything we share — the laughs, the support, and even the quiet moments. You mean a lot to me, and I’d love to make this Valentine’s Day ours. Will you be my Valentine?`}
+                        reduceMotion={reduceMotion}
+                      />
+                    ) : (
+                      <span className="opacity-0" aria-hidden="true">
+                        {name} ❤️ Being with you has genuinely made my life better in so many ways, and I’m really grateful for everything we share — the laughs, the support, and even the quiet moments. You mean a lot to me, and I’d love to make this Valentine’s Day ours. Will you be my Valentine?
+                      </span>
+                    )}
                   </p>
                   <p className="mt-3 text-white/85">
                     Choose wisely (Very wisely)
                   </p>
-                  <div className="flex flex-row space-x-3 mt-8 text-sm text-white/80">
-                  <Button
-                    variant="default"
-                    className="touch-manipulation w-1/2 text-lg sm:text-xl"
-                    onClick={() => setStep('yes')}
-                  >
-                    Yes
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="touch-manipulation w-1/2 text-lg sm:text-xl opacity-0 pointer-events-none select-none"
-                    ref={noAnchorRef}
-                    tabIndex={-1}
-                    aria-hidden="true"
-                  >
-                    No
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-3 mt-8 text-sm text-white/80">
+                    <div className="relative w-full">
+                      <ButtonSparkles reduceMotion={reduceMotion} count={12} />
+                      <Button
+                        variant="default"
+                        className="touch-manipulation w-full text-lg sm:text-xl"
+                        onClick={() => setStep('yes')}
+                      >
+                        Yes
+                      </Button>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="touch-manipulation w-full text-lg sm:text-xl opacity-0 pointer-events-none select-none"
+                      ref={noAnchorRef}
+                      tabIndex={-1}
+                      aria-hidden="true"
+                    >
+                      No
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
